@@ -2,8 +2,9 @@ import { useState } from 'react'
 import TripCard from './TripCard'
 import CreateTripCard from './CreateTripCard'
 
-export default function TripsSection({ trips }) {
+export default function TripsSection({ trips, pastTrips = [] }) {
   const [filter, setFilter] = useState('upcoming')
+  const visibleTrips = filter === 'upcoming' ? trips : pastTrips
 
   return (
     <div className="space-y-8 lg:col-span-8" id="trips">
@@ -36,18 +37,14 @@ export default function TripsSection({ trips }) {
       </div>
 
       <div className="grid grid-cols-1 gap-[var(--spacing-gutter)] md:grid-cols-2">
-        {filter === 'upcoming' ? (
-          <>
-            {trips.map((trip) => (
-              <TripCard key={trip.id} trip={trip} />
-            ))}
-            <CreateTripCard />
-          </>
+        {visibleTrips.length > 0 ? (
+          visibleTrips.map((trip) => <TripCard key={trip.id} trip={trip} />)
         ) : (
           <p className="col-span-full py-8 text-center font-body-md text-on-surface-variant">
-            No past trips yet.
+            {filter === 'past' ? 'No past trips yet.' : 'No upcoming trips yet.'}
           </p>
         )}
+        {filter === 'upcoming' && <CreateTripCard />}
       </div>
     </div>
   )

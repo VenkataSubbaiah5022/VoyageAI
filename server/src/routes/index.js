@@ -4,6 +4,8 @@ const dashboardRoutes = require('./dashboardRoutes')
 const shareRoutes = require('./shareRoutes')
 const uploadRoutes = require('./uploadRoutes')
 const itineraryRoutes = require('./itineraryRoutes')
+const exploreRoutes = require('./exploreRoutes')
+const notificationsRoutes = require('./notificationsRoutes')
 
 const router = Router()
 
@@ -16,5 +18,7 @@ router.use('/dashboard', dashboardRoutes)
 router.use('/share', shareRoutes)
 router.use('/uploads', uploadRoutes)
 router.use('/itineraries', itineraryRoutes)
+router.use('/explore', exploreRoutes)
+router.use('/notifications', notificationsRoutes)
 
 module.exports = router

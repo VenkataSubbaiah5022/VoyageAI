@@ -46,6 +46,17 @@ export const authApi = {
 
 export const dashboardApi = {
   getDashboard: () => request('/dashboard'),
+  getItineraries: (status = 'upcoming') =>
+    request(`/dashboard/itineraries?status=${status}`),
+  getUploads: () => request('/dashboard/uploads'),
+}
+
+export const exploreApi = {
+  getDestinations: () => request('/explore'),
+}
+
+export const notificationsApi = {
+  getNotifications: () => request('/notifications'),
 }
 
 export const shareApi = {

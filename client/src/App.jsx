@@ -5,6 +5,9 @@ import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import UploadPage from './pages/UploadPage'
+import ExplorePage from './pages/ExplorePage'
+import NotificationsPage from './pages/NotificationsPage'
+import NotFoundPage from './pages/NotFoundPage'
 import ShareableItineraryPage from './pages/ShareableItineraryPage'
 
 function App() {
@@ -16,6 +19,7 @@ function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/signup" element={<AuthPage initialTab="signup" />} />
           <Route path="/share/:shareId" element={<ShareableItineraryPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
           <Route
             path="/dashboard"
             element={
@@ -32,6 +36,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/notifications"
+            element={
+              <ProtectedRoute>
+                <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

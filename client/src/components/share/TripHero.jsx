@@ -1,3 +1,5 @@
+import { downloadTripCalendar } from '../../utils/calendar'
+
 export default function TripHero({ trip }) {
   const handleShare = async () => {
     const url = window.location.href
@@ -6,6 +8,10 @@ export default function TripHero({ trip }) {
     } else {
       await navigator.clipboard.writeText(url)
     }
+  }
+
+  const handleCalendar = () => {
+    downloadTripCalendar(trip)
   }
 
   return (
@@ -40,6 +46,7 @@ export default function TripHero({ trip }) {
           </button>
           <button
             type="button"
+            onClick={handleCalendar}
             className="flex items-center gap-2 rounded-lg bg-secondary px-6 py-3 font-label-md text-label-md text-white shadow-lg transition-all hover:brightness-110"
           >
             <span className="material-symbols-outlined" aria-hidden="true">

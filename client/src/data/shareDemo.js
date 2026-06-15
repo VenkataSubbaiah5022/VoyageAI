@@ -1,9 +1,12 @@
 export const SHARE_DEMO = {
   shareId: 'demo',
+  title: 'Amalfi Coast Escape',
   tag: 'AI OPTIMIZED',
   subtitle: '7 Days in Paradise',
   destination: 'Amalfi Coast, Italy',
   dateRange: 'Sept 12 — Sept 19, 2024',
+  startDate: '2024-09-12T10:00:00.000Z',
+  endDate: '2024-09-19T18:00:00.000Z',
   heroImage:
     'https://lh3.googleusercontent.com/aida-public/AB6AXuBf9kkhR2wMmUPiyqUtJcZb4xkFQcj4lzT3Oh4As4u5IbU9-BuMdLrUBYZftK97AxqLACaa3M6jr2R8neAz4ekEyfHz3C12pDmfMAddebp6RCoa7N2iCG_bYzghcybUOmsivzxe8zLAa3XqH3wpDUUO9dsa6az5Efb8nc5KI1mBVHZqfLUrjpCmS7I55Mi0DiY8nxF6LxaRmGWFF41nvssuEJ72H5AyjafVN2VCPR8dFVqqkEIFpsfP1F3anIV98rBT3yE9vi-2v8Eu',
   stopsCount: 7,

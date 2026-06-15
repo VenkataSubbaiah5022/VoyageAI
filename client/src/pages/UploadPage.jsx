@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MOCK_EXTRACTED } from '../data/uploadDemo'
+import { MOCK_EXTRACTED_FALLBACK } from '../data/uploadDemo'
 import { uploadApi, itineraryApi } from '../services/api'
-import UploadNavbar from '../components/upload/UploadNavbar'
+import AppNavbar from '../components/layout/AppNavbar'
 import UploadFooter from '../components/upload/UploadFooter'
 import DropZone from '../components/upload/DropZone'
 import ProcessingOverlay from '../components/upload/ProcessingOverlay'
@@ -45,7 +45,7 @@ export default function UploadPage() {
       setExtractedItems([])
 
       let ids = []
-      let itemsToShow = MOCK_EXTRACTED
+      let itemsToShow = MOCK_EXTRACTED_FALLBACK
 
       try {
         const { data } = await uploadApi.uploadFiles(files)
@@ -82,18 +82,18 @@ export default function UploadPage() {
         navigate(`/share/${shareId}`)
         return
       }
-    } catch {
-      // Demo fallback — navigate to dashboard after delay like Stitch
+    } catch (err) {
+      setIsGenerating(false)
+      alert(err?.message || 'Could not generate itinerary. Please try again.')
+      return
     }
 
-    setTimeout(() => {
-      navigate('/dashboard')
-    }, 2000)
+    navigate('/dashboard')
   }
 
   return (
     <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface selection:bg-secondary-fixed-dim">
-      <UploadNavbar />
+      <AppNavbar />
       <main className="mx-auto w-full max-w-[var(--spacing-container-max)] flex-grow px-[var(--spacing-margin-mobile)] py-12 md:px-[var(--spacing-margin-desktop)]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12">
           <div className="space-y-8 lg:col-span-7">

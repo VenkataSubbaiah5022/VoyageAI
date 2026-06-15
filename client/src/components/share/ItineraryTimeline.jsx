@@ -18,6 +18,13 @@ function ActivityCard({ activity }) {
           {activity.cta && (
             <button
               type="button"
+              onClick={() =>
+                window.open(
+                  `https://www.google.com/search?q=${encodeURIComponent(activity.title)}`,
+                  '_blank',
+                  'noopener,noreferrer',
+                )
+              }
               className="mt-3 flex items-center gap-1 font-label-md text-label-md text-secondary transition-all hover:gap-2"
             >
               {activity.cta}

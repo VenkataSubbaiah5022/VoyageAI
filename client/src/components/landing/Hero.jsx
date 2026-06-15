@@ -37,12 +37,12 @@ export default function Hero() {
           >
             Get Started
           </Link>
-          <button
-            type="button"
+          <Link
+            to="/explore"
             className="rounded-lg border border-white/40 bg-white/10 px-8 py-4 font-title-lg text-title-lg text-white backdrop-blur-md transition-all hover:bg-white/20"
           >
             Watch Demo
-          </button>
+          </Link>
         </div>
       </div>
 
