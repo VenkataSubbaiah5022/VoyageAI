@@ -164,3 +164,13 @@ html.auth-route #root {
     left: 15px;
   }
 }
+
+.glass-panel {
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.drop-zone-active {
+  border-color: #fe6f42;
+  background-color: #ffdbd033;
+}

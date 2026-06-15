@@ -2,6 +2,8 @@ const { Router } = require('express')
 const authRoutes = require('./authRoutes')
 const dashboardRoutes = require('./dashboardRoutes')
 const shareRoutes = require('./shareRoutes')
+const uploadRoutes = require('./uploadRoutes')
+const itineraryRoutes = require('./itineraryRoutes')
 
 const router = Router()
 
@@ -12,5 +14,7 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes)
 router.use('/dashboard', dashboardRoutes)
 router.use('/share', shareRoutes)
+router.use('/uploads', uploadRoutes)
+router.use('/itineraries', itineraryRoutes)
 
 module.exports = router

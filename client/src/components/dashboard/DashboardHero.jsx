@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function DashboardHero({ firstName }) {
   const name = firstName || 'Traveler'
 
@@ -11,15 +13,15 @@ export default function DashboardHero({ firstName }) {
           Your AI-curated journeys are ready for exploration. Where will you go next?
         </p>
       </div>
-      <button
-        type="button"
+      <Link
+        to="/upload"
         className="flex w-fit items-center gap-3 rounded-xl bg-secondary-container px-8 py-4 font-headline-md text-headline-md text-on-secondary-container shadow-lg transition-all hover:brightness-110"
       >
         <span className="material-symbols-outlined" aria-hidden="true">
           map
         </span>
         Plan New Trip
-      </button>
+      </Link>
     </section>
   )
 }

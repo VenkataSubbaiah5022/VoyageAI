@@ -3,8 +3,9 @@ const API_BASE = '/api'
 const getToken = () => localStorage.getItem('voyageai_token')
 
 async function request(path, options = {}) {
+  const isFormData = options.body instanceof FormData
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...options.headers,
   }
 
@@ -49,6 +50,28 @@ export const dashboardApi = {
 
 export const shareApi = {
   getShared: (shareId) => request(`/share/${shareId}`),
+}
+
+export const uploadApi = {
+  uploadFiles: (files) => {
+    const formData = new FormData()
+    files.forEach((file) => formData.append('files', file))
+    return request('/uploads', { method: 'POST', body: formData })
+  },
+
+  processUploads: (uploadIds) =>
+    request('/uploads/process', {
+      method: 'POST',
+      body: JSON.stringify({ uploadIds }),
+    }),
+}
+
+export const itineraryApi = {
+  generate: (payload) =>
+    request('/itineraries/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 }
 
 export { getToken }
