@@ -23,7 +23,7 @@ export default function SignUpForm({ visible }) {
 
     try {
       await register({ firstName, lastName, email, password, acceptedTerms })
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       setError(err.message)
     } finally {

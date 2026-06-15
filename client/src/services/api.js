@@ -43,4 +43,8 @@ export const authApi = {
   getMe: () => request('/auth/me'),
 }
 
+export const dashboardApi = {
+  getDashboard: () => request('/dashboard'),
+}
+
 export { getToken }

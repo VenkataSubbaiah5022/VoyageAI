@@ -127,6 +127,14 @@
   transform: translateY(0);
 }
 
+.elevation-1 {
+  box-shadow: 0px 4px 20px rgba(0, 51, 102, 0.04);
+}
+
+.elevation-2 {
+  box-shadow: 0px 12px 32px rgba(0, 51, 102, 0.08);
+}
+
 html.auth-route,
 body.auth-route {
   height: 100svh;

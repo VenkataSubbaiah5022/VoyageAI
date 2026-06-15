@@ -1,5 +1,6 @@
 const { Router } = require('express')
 const authRoutes = require('./authRoutes')
+const dashboardRoutes = require('./dashboardRoutes')
 
 const router = Router()
 
@@ -8,5 +9,6 @@ router.get('/health', (_req, res) => {
 })
 
 router.use('/auth', authRoutes)
+router.use('/dashboard', dashboardRoutes)
 
 module.exports = router

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const PROFILE_IMAGE =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuAw7j_zeteQ51AbQZY13WwvZ7OlhgyxDZaYZrVJgTsOAa16clgFq279hmiRxCujGW40KJbtNbAyHmS_4MwnIuT5Lobi4T_JVrXV5xmuGiTBBv3G-od5yMZOh9GXG_IO5xQkdbFE-uwlpASqVBU86n4h7tSTIIhaORvRpaKjTefdcyJUmDfslkaErH653DPPMReQgZnUus83Qr_s6zc2FlhJWTUJnsvyE-SKAKXZbEngObl3nXJQkAPXx_kh0SVGA4cdni4530cpByhG'
 
@@ -10,12 +12,12 @@ export default function Navbar() {
         </div>
 
         <div className="hidden items-center gap-8 md:flex">
-          <a
-            href="#"
+          <Link
+            to="/dashboard"
             className="font-label-md text-label-md text-on-surface-variant transition-colors hover:text-primary"
           >
             Dashboard
-          </a>
+          </Link>
           <a
             href="#"
             className="font-label-md text-label-md text-on-surface-variant transition-colors hover:text-primary"
