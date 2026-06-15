@@ -11,6 +11,8 @@ const formatUser = (user) => ({
   lastName: user.lastName,
   email: user.email,
   createdAt: user.createdAt,
+  preferences: user.preferences,
+  notificationSettings: user.notificationSettings,
 })
 
 const sendAuthResponse = (res, user, statusCode = 200) => {

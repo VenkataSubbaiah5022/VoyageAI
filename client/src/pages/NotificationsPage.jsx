@@ -71,7 +71,7 @@ export default function NotificationsPage() {
               Mark all as read
             </button>
             <Link
-              to="/dashboard"
+              to="/profile"
               aria-label="Settings"
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-outline-variant text-on-surface transition-colors duration-200 hover:bg-surface-container-low"
             >

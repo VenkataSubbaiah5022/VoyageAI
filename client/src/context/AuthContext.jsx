@@ -69,6 +69,18 @@ export function AuthProvider({ children }) {
       })
   }, [clearSession])
 
+  const refreshUser = useCallback(async () => {
+    const { data } = await authApi.getMe()
+    setUser(data.user)
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user))
+    return data.user
+  }, [])
+
+  const updateUser = useCallback((userData) => {
+    setUser(userData)
+    localStorage.setItem(USER_KEY, JSON.stringify(userData))
+  }, [])
+
   const value = useMemo(
     () => ({
       user,
@@ -77,8 +89,10 @@ export function AuthProvider({ children }) {
       register,
       login,
       logout,
+      refreshUser,
+      updateUser,
     }),
-    [user, loading, register, login, logout],
+    [user, loading, register, login, logout, refreshUser, updateUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

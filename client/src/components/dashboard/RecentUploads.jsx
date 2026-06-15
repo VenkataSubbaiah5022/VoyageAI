@@ -10,7 +10,7 @@ export default function RecentUploads({ uploads, tipDestination }) {
       <div className="space-y-6 rounded-2xl border border-outline-variant bg-surface-container-low p-6">
         <div className="flex items-center justify-between">
           <h2 className="font-title-lg text-title-lg text-primary">Recent Uploads</h2>
-          <Link to="/upload" className="font-label-sm text-label-sm text-secondary hover:underline">
+          <Link to="/profile?tab=documents" className="font-label-sm text-label-sm text-secondary hover:underline">
             View All
           </Link>
         </div>

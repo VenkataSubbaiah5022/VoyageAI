@@ -29,6 +29,17 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    preferences: {
+      travelStyle: { type: String, default: 'Adventure' },
+      budget: { type: String, default: 'Premium' },
+      dining: { type: String, default: 'Foodie' },
+      interests: { type: [String], default: ['Beach', 'Solo'] },
+    },
+    notificationSettings: {
+      tripUpdates: { type: Boolean, default: true },
+      priceAlerts: { type: Boolean, default: true },
+      weeklyDigest: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,

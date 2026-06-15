@@ -8,6 +8,7 @@ import UploadPage from './pages/UploadPage'
 import ExplorePage from './pages/ExplorePage'
 import NotificationsPage from './pages/NotificationsPage'
 import NotFoundPage from './pages/NotFoundPage'
+import ProfilePage from './pages/ProfilePage'
 import ShareableItineraryPage from './pages/ShareableItineraryPage'
 
 function App() {
@@ -41,6 +42,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <NotificationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

@@ -67,14 +67,13 @@ export default function AppNavbar({ activeItem = null }) {
           )}
 
           {isAuthenticated ? (
-            <button
-              type="button"
-              onClick={logout}
+            <Link
+              to="/profile"
               className={`flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-outline-variant text-sm font-bold text-on-primary ${avatarColor}`}
-              title={`${user.firstName} ${user.lastName} — Sign out`}
+              title={`${user.firstName} ${user.lastName} — Profile`}
             >
               {initials}
-            </button>
+            </Link>
           ) : (
             <Link
               to="/auth"

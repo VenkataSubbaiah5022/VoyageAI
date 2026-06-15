@@ -217,3 +217,13 @@ html.auth-route #root {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+.settings-card {
+  box-shadow: 0px 4px 20px rgba(0, 51, 102, 0.04);
+  border: 1px solid #e2e8f0;
+}
+
+.active-nav-link {
+  background-color: #003366;
+  color: #799dd6;
+}

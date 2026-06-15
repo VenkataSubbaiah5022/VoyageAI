@@ -55,6 +55,16 @@ export const exploreApi = {
   getDestinations: () => request('/explore'),
 }
 
+export const profileApi = {
+  getProfile: () => request('/profile'),
+  updateProfile: (payload) =>
+    request('/profile', { method: 'PATCH', body: JSON.stringify(payload) }),
+  updatePassword: (payload) =>
+    request('/profile/password', { method: 'PUT', body: JSON.stringify(payload) }),
+  deleteAccount: (payload) =>
+    request('/profile', { method: 'DELETE', body: JSON.stringify(payload) }),
+}
+
 export const notificationsApi = {
   getNotifications: () => request('/notifications'),
 }
@@ -64,6 +74,12 @@ export const shareApi = {
 }
 
 export const uploadApi = {
+  listUploads: () => request('/uploads'),
+
+  deleteUpload: (id) => request(`/uploads/${id}`, { method: 'DELETE' }),
+
+  deleteAllUploads: () => request('/uploads/all', { method: 'DELETE' }),
+
   uploadFiles: (files) => {
     const formData = new FormData()
     files.forEach((file) => formData.append('files', file))
