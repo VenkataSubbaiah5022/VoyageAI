@@ -44,8 +44,8 @@ coverage/
 Thumbs.db
 desktop.ini
 
-# MongoDB local data
-data/
+# MongoDB local data (repo root only — keep client/src/data/ in version control)
+/data/
 *.mongodb
 
 # Debug
