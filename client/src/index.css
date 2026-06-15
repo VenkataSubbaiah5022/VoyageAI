@@ -110,3 +110,32 @@
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
+
+.form-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-form-hidden {
+  display: none;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.auth-form-visible {
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+html.auth-route,
+body.auth-route {
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+}
+
+html.auth-route #root {
+  height: 100svh;
+  max-height: 100svh;
+  overflow: hidden;
+}

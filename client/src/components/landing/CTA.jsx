@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function CTA() {
   return (
     <section className="mb-20 px-[var(--spacing-margin-mobile)] py-20 md:px-[var(--spacing-margin-desktop)]">
@@ -11,12 +13,12 @@ export default function CTA() {
           <p className="mx-auto mb-10 max-w-xl font-body-lg text-body-lg opacity-90">
             Join over 50,000 travelers who use VoyageAI to plan smarter and discover more.
           </p>
-          <button
-            type="button"
-            className="rounded-lg bg-secondary-container px-10 py-5 font-title-lg text-title-lg font-bold text-on-secondary-container shadow-2xl transition-transform hover:scale-105"
+          <Link
+            to="/auth/signup"
+            className="inline-block rounded-lg bg-secondary-container px-10 py-5 font-title-lg text-title-lg font-bold text-on-secondary-container shadow-2xl transition-transform hover:scale-105"
           >
             Get Started Free
-          </button>
+          </Link>
           <p className="mt-6 font-label-sm text-label-sm opacity-70">
             No credit card required. Free for your first 3 trips.
           </p>

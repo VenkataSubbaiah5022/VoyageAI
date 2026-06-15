@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Icon from '../Icon'
 
 const HERO_IMAGE =
@@ -30,12 +31,12 @@ export default function Hero() {
         </p>
 
         <div className="flex flex-col justify-center gap-4 sm:flex-row">
-          <button
-            type="button"
+          <Link
+            to="/auth/signup"
             className="rounded-lg bg-secondary-container px-8 py-4 font-title-lg text-title-lg font-bold text-on-secondary-container shadow-xl transition-all hover:-translate-y-0.5 active:scale-95"
           >
             Get Started
-          </button>
+          </Link>
           <button
             type="button"
             className="rounded-lg border border-white/40 bg-white/10 px-8 py-4 font-title-lg text-title-lg text-white backdrop-blur-md transition-all hover:bg-white/20"
