@@ -1,17 +1,18 @@
-require('dotenv').config()
-const express = require('express')
-const cors = require('cors')
+require('./config/env')
 
-const app = express()
-const PORT = process.env.PORT || 5000
+const app = require('./app')
+const connectDB = require('./config/db')
+const env = require('./config/env')
 
-app.use(cors())
-app.use(express.json())
+const startServer = async () => {
+  await connectDB()
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'VoyageAI API' })
-})
+  app.listen(env.port, () => {
+    console.log(`VoyageAI API running on port ${env.port}`)
+  })
+}
 
-app.listen(PORT, () => {
-  console.log(`VoyageAI server running on port ${PORT}`)
+startServer().catch((error) => {
+  console.error('Failed to start server:', error.message)
+  process.exit(1)
 })
