@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
+import ShareableItineraryPage from './pages/ShareableItineraryPage'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/signup" element={<AuthPage initialTab="signup" />} />
+          <Route path="/share/:shareId" element={<ShareableItineraryPage />} />
           <Route
             path="/dashboard"
             element={

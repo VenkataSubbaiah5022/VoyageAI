@@ -47,4 +47,8 @@ export const dashboardApi = {
   getDashboard: () => request('/dashboard'),
 }
 
+export const shareApi = {
+  getShared: (shareId) => request(`/share/${shareId}`),
+}
+
 export { getToken }

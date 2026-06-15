@@ -147,3 +147,20 @@ html.auth-route #root {
   max-height: 100svh;
   overflow: hidden;
 }
+
+.timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+  .timeline-line::before {
+    left: 15px;
+  }
+}

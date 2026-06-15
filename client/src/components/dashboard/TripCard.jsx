@@ -1,6 +1,13 @@
+import { Link } from 'react-router-dom'
+
 export default function TripCard({ trip }) {
+  const sharePath = trip.shareId ? `/share/${trip.shareId}` : '/share/demo'
+
   return (
-    <div className="group elevation-1 cursor-pointer overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest transition-all hover:elevation-2">
+    <Link
+      to={sharePath}
+      className="group elevation-1 block cursor-pointer overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest transition-all hover:elevation-2"
+    >
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
           src={trip.imageUrl}
@@ -40,6 +47,6 @@ export default function TripCard({ trip }) {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   )
 }
