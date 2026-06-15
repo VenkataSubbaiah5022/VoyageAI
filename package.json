@@ -4,6 +4,7 @@
   "private": true,
   "description": "AI-powered travel itinerary generator",
   "scripts": {
+    "postinstall": "npm install --prefix client --include=dev",
     "dev": "concurrently \"npm run dev --prefix client\" \"npm run dev --prefix server\"",
     "dev:client": "npm run dev --prefix client",
     "dev:server": "npm run dev --prefix server",
