@@ -30,7 +30,16 @@ export default function ShareableItineraryPage() {
       .finally(() => setLoading(false))
   }, [shareId])
 
-  const handlePrint = () => window.print()
+  useEffect(() => {
+    const clearPrintClass = () => document.body.classList.remove('printing-itinerary')
+    window.addEventListener('afterprint', clearPrintClass)
+    return () => window.removeEventListener('afterprint', clearPrintClass)
+  }, [])
+
+  const handlePrint = () => {
+    document.body.classList.add('printing-itinerary')
+    window.print()
+  }
 
   if (loading) {
     return (
@@ -55,7 +64,7 @@ export default function ShareableItineraryPage() {
   }
 
   return (
-    <div className="min-h-svh bg-background font-body-md text-body-md text-on-background">
+    <div className="share-itinerary-page min-h-svh bg-background font-body-md text-body-md text-on-background">
       <AppNavbar activeItem="trips" />
       <main className="mx-auto max-w-[var(--spacing-container-max)] px-[var(--spacing-margin-mobile)] py-8 md:px-[var(--spacing-margin-desktop)]">
         <TripHero trip={trip} />
@@ -68,7 +77,7 @@ export default function ShareableItineraryPage() {
               {trip.stopsCount} Stops • {trip.activitiesCount} Activities
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="no-print flex items-center gap-2">
             <button
               type="button"
               title="Print itinerary"
@@ -81,7 +90,7 @@ export default function ShareableItineraryPage() {
             </button>
             <button
               type="button"
-              title="Save as PDF"
+              title="Save as PDF (opens print dialog)"
               onClick={handlePrint}
               className="rounded-lg p-2 text-outline transition-all hover:bg-surface-container"
             >

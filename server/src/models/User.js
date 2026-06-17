@@ -40,6 +40,9 @@ const userSchema = new mongoose.Schema(
       priceAlerts: { type: Boolean, default: true },
       weeklyDigest: { type: Boolean, default: false },
     },
+    readNotificationIds: { type: [String], default: [] },
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
   },
   {
     timestamps: true,

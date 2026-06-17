@@ -11,33 +11,52 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [headerVisible, setHeaderVisible] = useState(false)
 
+  const loadNotifications = () => {
+    setLoading(true)
+    return notificationsApi
+      .getNotifications()
+      .then(({ data }) => setNotifications(data.notifications || []))
+      .catch(() => setNotifications([]))
+      .finally(() => setLoading(false))
+  }
+
   useEffect(() => {
     const timer = setTimeout(() => setHeaderVisible(true), 100)
     return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
-    notificationsApi
-      .getNotifications()
-      .then(({ data }) => setNotifications(data.notifications || []))
-      .catch(() => setNotifications([]))
-      .finally(() => setLoading(false))
+    loadNotifications()
   }, [])
 
-  const markAsRead = (id) => {
+  const markAsRead = async (id) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, status: 'read' } : n)),
     )
+    try {
+      const { data } = await notificationsApi.markRead({ ids: [id] })
+      setNotifications(data.notifications || [])
+    } catch {
+      loadNotifications()
+    }
   }
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, status: 'read' })))
+    try {
+      const { data } = await notificationsApi.markRead({ markAll: true })
+      setNotifications(data.notifications || [])
+    } catch {
+      loadNotifications()
+    }
   }
 
   const handleAction = (notification) => {
     markAsRead(notification.id)
     if (notification.link) navigate(notification.link)
   }
+
+  const unreadCount = notifications.filter((n) => n.status === 'new').length
 
   return (
     <div className="min-h-svh bg-background font-body-md text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
@@ -57,13 +76,15 @@ export default function NotificationsPage() {
             </h1>
             <p className="max-w-md font-body-lg text-body-lg text-on-surface-variant">
               Stay updated with your latest travel arrangements and AI-powered insights.
+              {unreadCount > 0 && ` (${unreadCount} unread)`}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={markAllAsRead}
-              className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors duration-200 hover:bg-surface-container-low"
+              disabled={unreadCount === 0}
+              className="flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2.5 font-label-md text-label-md text-on-surface transition-colors duration-200 hover:bg-surface-container-low disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[20px]" aria-hidden="true">
                 done_all
@@ -107,7 +128,7 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {notifications.length > 0 && (
+        {notifications.length > 0 && unreadCount === 0 && (
           <div className="mt-12 flex flex-col items-center gap-4">
             <p className="font-label-sm text-label-sm text-outline">You&apos;re all caught up</p>
           </div>

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AppNavbar from '../components/layout/AppNavbar'
 import NotFoundFooter, { NotFoundDecorations } from '../components/notfound/NotFoundFooter'
 
 export default function NotFoundPage() {
+  const navigate = useNavigate()
   const illustrationRef = useRef(null)
   const [searchFocused, setSearchFocused] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -19,6 +21,16 @@ export default function NotFoundPage() {
     document.addEventListener('mousemove', handleMouseMove)
     return () => document.removeEventListener('mousemove', handleMouseMove)
   }, [])
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    if (q) {
+      navigate(`/explore?q=${encodeURIComponent(q)}`)
+      return
+    }
+    navigate('/explore')
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-body-md text-on-background">
@@ -56,12 +68,12 @@ export default function NotFoundPage() {
               Looks like you&apos;re off the map.
             </h1>
             <p className="mx-auto max-w-xl font-body-lg text-body-lg text-on-surface-variant">
-              The destination you&apos;re looking for doesn&apos;t exist in our database. Let&apos;s get
-              you back on track with your AI-powered journey.
+              The destination you&apos;re looking for doesn&apos;t exist in our database. Search below or
+              head back to your dashboard.
             </p>
           </div>
 
-          <div className="mx-auto mb-10 max-w-md">
+          <form className="mx-auto mb-10 max-w-md" onSubmit={handleSearch}>
             <div
               className={`relative transition-transform duration-200 ${searchFocused ? 'scale-[1.02]' : ''}`}
             >
@@ -71,14 +83,16 @@ export default function NotFoundPage() {
                 </span>
               </div>
               <input
-                type="text"
+                type="search"
                 placeholder="Search destinations, trips, or help..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
                 className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest py-4 pr-4 pl-12 font-body-md shadow-sm transition-all outline-none focus:border-on-tertiary-container focus:ring-4 focus:ring-on-tertiary-container/10"
               />
             </div>
-          </div>
+          </form>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link

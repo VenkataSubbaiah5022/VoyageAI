@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import AuthVisual from '../components/auth/AuthVisual'
 import SignInForm from '../components/auth/SignInForm'
 import SignUpForm from '../components/auth/SignUpForm'
-import SocialLogin from '../components/auth/SocialLogin'
 import TrustSeal from '../components/auth/TrustSeal'
 
 const toggleActive =
@@ -93,7 +92,6 @@ export default function AuthPage({ initialTab = 'signin' }) {
           <div className="relative shrink-0">
             <SignInForm visible={activeTab === 'signin'} />
             <SignUpForm visible={activeTab === 'signup'} />
-            <SocialLogin />
             <TrustSeal />
           </div>
         </div>

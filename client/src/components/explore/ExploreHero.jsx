@@ -6,12 +6,13 @@ export default function ExploreHero({
   onCategoryChange,
   searchQuery,
   onSearchChange,
+  onSearchSubmit,
 }) {
   const [searchFocused, setSearchFocused] = useState(false)
 
   const handleSearch = (e) => {
     e.preventDefault()
-    // Filtering is live via searchQuery; submit keeps focus UX
+    onSearchSubmit?.()
   }
 
   return (

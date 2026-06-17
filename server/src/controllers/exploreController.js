@@ -47,16 +47,40 @@ const FALLBACK = [
   },
 ]
 
-const getExploreDestinations = asyncHandler(async (_req, res) => {
-  const itineraries = await Itinerary.find({ shareId: { $exists: true, $ne: null } })
-    .sort({ createdAt: -1 })
-    .limit(12)
-    .lean()
+const getExploreDestinations = asyncHandler(async (req, res) => {
+  const { q = '', category = 'all' } = req.query
+  const search = q.trim()
 
-  const destinations =
-    itineraries.length > 0 ? itineraries.map(mapDestination) : FALLBACK
+  const dbQuery = { shareId: { $exists: true, $ne: null } }
 
-  res.json({ success: true, data: { destinations } })
+  if (search) {
+    const pattern = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+    dbQuery.$or = [{ destination: pattern }, { title: pattern }, { subtitle: pattern }]
+  }
+
+  const itineraries = await Itinerary.find(dbQuery).sort({ createdAt: -1 }).limit(24).lean()
+
+  let destinations = itineraries.length > 0 ? itineraries.map(mapDestination) : FALLBACK
+
+  if (category && category !== 'all') {
+    destinations = destinations.filter((d) => d.category === category)
+  }
+
+  if (search && destinations.length === 0 && itineraries.length === 0) {
+    destinations = FALLBACK.filter(
+      (d) =>
+        d.title.toLowerCase().includes(search.toLowerCase()) ||
+        d.description.toLowerCase().includes(search.toLowerCase()),
+    )
+  }
+
+  res.json({
+    success: true,
+    data: {
+      destinations,
+      meta: { query: search || null, category, count: destinations.length },
+    },
+  })
 })
 
 module.exports = { getExploreDestinations }

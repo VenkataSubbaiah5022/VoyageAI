@@ -227,3 +227,27 @@ html.auth-route #root {
   background-color: #003366;
   color: #799dd6;
 }
+
+@media print {
+  body.printing-itinerary nav,
+  body.printing-itinerary footer,
+  body.printing-itinerary .no-print {
+    display: none !important;
+  }
+
+  body.printing-itinerary .share-itinerary-page {
+    background: white !important;
+    color: #191c1e !important;
+  }
+
+  body.printing-itinerary main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  body.printing-itinerary .glass-card {
+    box-shadow: none !important;
+    border: 1px solid #e0e3e5 !important;
+    break-inside: avoid;
+  }
+}

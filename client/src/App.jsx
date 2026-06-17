@@ -10,6 +10,8 @@ import NotificationsPage from './pages/NotificationsPage'
 import NotFoundPage from './pages/NotFoundPage'
 import ProfilePage from './pages/ProfilePage'
 import ShareableItineraryPage from './pages/ShareableItineraryPage'
+import ForgotPasswordPage from './pages/ForgotPasswordPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/signup" element={<AuthPage initialTab="signup" />} />
+          <Route path="/auth/forgot" element={<ForgotPasswordPage />} />
+          <Route path="/auth/reset" element={<ResetPasswordPage />} />
           <Route path="/share/:shareId" element={<ShareableItineraryPage />} />
           <Route path="/explore" element={<ExplorePage />} />
           <Route

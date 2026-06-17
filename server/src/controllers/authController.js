@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
-const asyncHandler = require('../utils/asyncHandler')
-const ApiError = require('../utils/ApiError')
+const crypto = require('crypto')
+const asyncHandler = require('../utils/asyncHandler')const ApiError = require('../utils/ApiError')
 const User = require('../models/User')
 const generateToken = require('../utils/generateToken')
 const env = require('../config/env')
@@ -82,8 +82,7 @@ const getMe = asyncHandler(async (req, res) => {
   })
 })
 
-const protect = asyncHandler(async (req, _res, next) => {
-  const authHeader = req.headers.authorization
+const protect = asyncHandler(async (req, _res, next) => {  const authHeader = req.headers.authorization
 
   if (!authHeader?.startsWith('Bearer ')) {
     throw new ApiError(401, 'Not authorized, no token provided')
@@ -106,9 +105,76 @@ const protect = asyncHandler(async (req, _res, next) => {
   }
 })
 
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body
+
+  if (!email?.trim()) {
+    throw new ApiError(400, 'Email is required')
+  }
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() })
+
+  if (!user) {
+    return res.json({
+      success: true,
+      message: 'If an account exists for that email, password reset instructions have been sent.',
+    })
+  }
+
+  const resetToken = crypto.randomBytes(32).toString('hex')
+  user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex')
+  user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000)
+  await user.save({ validateBeforeSave: false })
+
+  const resetUrl = `${env.clientUrl}/auth/reset?token=${resetToken}&email=${encodeURIComponent(user.email)}`
+
+  const payload = {
+    success: true,
+    message: 'If an account exists for that email, password reset instructions have been sent.',
+  }
+
+  if (env.nodeEnv === 'development') {
+    payload.data = { resetUrl }
+  }
+
+  res.json(payload)
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, token, password } = req.body
+
+  if (!email?.trim() || !token || !password) {
+    throw new ApiError(400, 'Email, token, and new password are required')
+  }
+
+  if (password.length < 6) {
+    throw new ApiError(400, 'Password must be at least 6 characters')
+  }
+
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex')
+  const user = await User.findOne({
+    email: email.toLowerCase().trim(),
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() },
+  }).select('+passwordResetToken +passwordResetExpires +password')
+
+  if (!user) {
+    throw new ApiError(400, 'Password reset token is invalid or has expired')
+  }
+
+  user.password = password
+  user.passwordResetToken = undefined
+  user.passwordResetExpires = undefined
+  await user.save()
+
+  res.json({ success: true, message: 'Password reset successful. You can sign in now.' })
+})
+
 module.exports = {
   register,
   login,
   getMe,
+  forgotPassword,
+  resetPassword,
   protect,
 }

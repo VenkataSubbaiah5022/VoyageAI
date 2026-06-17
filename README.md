@@ -103,7 +103,10 @@ Vercel (`vercel.json`) deploys **only the frontend** (`client/dist`). The Expres
 | DELETE | `/api/itineraries/:id` | JWT | Delete an itinerary |
 | GET | `/api/uploads/:id/file` | JWT | View or download uploaded document |
 | GET | `/api/share/:shareId` | — | Public shared itinerary |
-| GET | `/api/explore` | — | Curated destinations |
+| POST | `/api/auth/forgot-password` | — | Request password reset |
+| POST | `/api/auth/reset-password` | — | Reset password with token |
+| PATCH | `/api/notifications/read` | JWT | Mark notifications read |
+| GET | `/api/explore?q=&category=` | — | Search/filter destinations |
 | GET | `/api/dashboard/*` | JWT | Trips and uploads |
 
 ## Project structure
@@ -123,7 +126,7 @@ VoyageAI/
 |---------|-------------|
 | `npm run dev` | Run client + server concurrently |
 | `npm run build` | Build client for production |
-| `npm run start` | Start API only (production) |
+| `npm run test` | Run server unit tests |
 
 ## License
 

@@ -1,4 +1,6 @@
 const asyncHandler = require('../utils/asyncHandler')
+const ApiError = require('../utils/ApiError')
+const User = require('../models/User')
 const Upload = require('../models/Upload')
 const Itinerary = require('../models/Itinerary')
 
@@ -15,37 +17,35 @@ const formatRelative = (date) => {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-const getNotifications = asyncHandler(async (req, res) => {
-  const [uploads, itineraries] = await Promise.all([
-    Upload.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5).lean(),
-    Itinerary.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5).lean(),
-  ])
-
+function buildNotifications(uploads, itineraries, readIds) {
+  const readSet = new Set(readIds)
   const notifications = []
 
   uploads.forEach((upload) => {
+    const id = `upload-${upload._id}`
     notifications.push({
-      id: `upload-${upload._id}`,
+      id,
       icon: upload.icon || 'description',
       iconBg: upload.iconBg || 'bg-primary-fixed',
       iconColor: upload.iconColor || 'text-on-primary-fixed-variant',
       title: 'Document uploaded',
-      status: 'new',
+      status: readSet.has(id) ? 'read' : 'new',
       message: `${upload.fileName} was added to your library${upload.tripLabel ? ` (${upload.tripLabel})` : ''}.`,
       time: formatRelative(upload.createdAt),
-      action: 'View Uploads',
-      link: '/upload',
+      action: 'View Documents',
+      link: '/profile',
     })
   })
 
   itineraries.forEach((trip) => {
+    const id = `trip-${trip._id}`
     notifications.push({
-      id: `trip-${trip._id}`,
+      id,
       icon: 'auto_awesome',
       iconBg: 'bg-tertiary-fixed',
       iconColor: 'text-on-tertiary-fixed-variant',
       title: 'Itinerary ready',
-      status: 'read',
+      status: readSet.has(id) ? 'read' : 'new',
       message: `Your ${trip.destination} trip is ready to view and share.`,
       time: formatRelative(trip.createdAt),
       action: 'View Itinerary',
@@ -58,7 +58,59 @@ const getNotifications = asyncHandler(async (req, res) => {
     return order[a.status] - order[b.status]
   })
 
-  res.json({ success: true, data: { notifications } })
+  return notifications
+}
+
+const getNotifications = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+  const readIds = user?.readNotificationIds || []
+
+  const [uploads, itineraries] = await Promise.all([
+    Upload.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5).lean(),
+    Itinerary.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5).lean(),
+  ])
+
+  res.json({
+    success: true,
+    data: { notifications: buildNotifications(uploads, itineraries, readIds) },
+  })
 })
 
-module.exports = { getNotifications }
+const markNotificationsRead = asyncHandler(async (req, res) => {
+  const { ids = [], markAll = false } = req.body
+  const user = await User.findById(req.user._id)
+
+  if (!user) {
+    throw new ApiError(404, 'User not found')
+  }
+
+  if (markAll) {
+    const [uploads, itineraries] = await Promise.all([
+      Upload.find({ user: user._id }).select('_id').lean(),
+      Itinerary.find({ user: user._id }).select('_id').lean(),
+    ])
+    const allIds = [
+      ...uploads.map((u) => `upload-${u._id}`),
+      ...itineraries.map((t) => `trip-${t._id}`),
+    ]
+    user.readNotificationIds = [...new Set([...(user.readNotificationIds || []), ...allIds])]
+  } else if (Array.isArray(ids) && ids.length > 0) {
+    user.readNotificationIds = [...new Set([...(user.readNotificationIds || []), ...ids])]
+  } else {
+    throw new ApiError(400, 'Provide notification ids or markAll: true')
+  }
+
+  await user.save()
+
+  const [uploads, itineraries] = await Promise.all([
+    Upload.find({ user: user._id }).sort({ createdAt: -1 }).limit(5).lean(),
+    Itinerary.find({ user: user._id }).sort({ createdAt: -1 }).limit(5).lean(),
+  ])
+
+  res.json({
+    success: true,
+    data: { notifications: buildNotifications(uploads, itineraries, user.readNotificationIds) },
+  })
+})
+
+module.exports = { getNotifications, markNotificationsRead, formatRelative }

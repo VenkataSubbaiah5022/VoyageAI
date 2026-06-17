@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const inputClass =
@@ -128,13 +128,13 @@ export default function SignUpForm({ visible }) {
             htmlFor="terms"
           >
             I agree to the{' '}
-            <a className="text-secondary hover:underline" href="#">
+            <Link className="text-secondary hover:underline" to="/">
               Terms of Service
-            </a>{' '}
+            </Link>{' '}
             and{' '}
-            <a className="text-secondary hover:underline" href="#">
+            <Link className="text-secondary hover:underline" to="/">
               Privacy Policy
-            </a>
+            </Link>
             .
           </label>
         </div>

@@ -42,6 +42,12 @@ export const authApi = {
     }),
 
   getMe: () => request('/auth/me'),
+
+  forgotPassword: (payload) =>
+    request('/auth/forgot-password', { method: 'POST', body: JSON.stringify(payload) }),
+
+  resetPassword: (payload) =>
+    request('/auth/reset-password', { method: 'POST', body: JSON.stringify(payload) }),
 }
 
 export const dashboardApi = {
@@ -52,7 +58,13 @@ export const dashboardApi = {
 }
 
 export const exploreApi = {
-  getDestinations: () => request('/explore'),
+  getDestinations: ({ q = '', category = 'all' } = {}) => {
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    if (category && category !== 'all') params.set('category', category)
+    const query = params.toString()
+    return request(`/explore${query ? `?${query}` : ''}`)
+  },
 }
 
 export const profileApi = {
@@ -67,6 +79,9 @@ export const profileApi = {
 
 export const notificationsApi = {
   getNotifications: () => request('/notifications'),
+
+  markRead: (payload) =>
+    request('/notifications/read', { method: 'PATCH', body: JSON.stringify(payload) }),
 }
 
 export const shareApi = {

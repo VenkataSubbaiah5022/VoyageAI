@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 const TABS = [
   { id: 'profile', label: 'Profile', icon: 'person' },
   { id: 'security', label: 'Security', icon: 'shield' },
@@ -34,17 +36,16 @@ export default function SettingsSidebar({ activeTab, onTabChange }) {
       </nav>
 
       <div className="mt-12 rounded-xl bg-primary-fixed p-6 text-on-primary-fixed">
-        <p className="mb-2 font-label-md text-label-md">VoyageAI Premium</p>
+        <p className="mb-2 font-label-md text-label-md">Plan more trips</p>
         <p className="mb-4 text-[13px] leading-relaxed opacity-80">
-          Unlock unlimited AI trip generations and priority support.
+          Upload bookings and let AI build your next shareable itinerary.
         </p>
-        <button
-          type="button"
-          disabled
-          className="w-full rounded-lg bg-primary py-2 font-label-sm text-label-sm text-on-primary opacity-60"
+        <Link
+          to="/upload"
+          className="block w-full rounded-lg bg-primary py-2 text-center font-label-sm text-label-sm text-on-primary transition-colors hover:bg-primary/90"
         >
-          Coming Soon
-        </button>
+          Start planning
+        </Link>
       </div>
     </aside>
   )

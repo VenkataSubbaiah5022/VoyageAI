@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 const inputClass =
@@ -74,9 +74,9 @@ export default function SignInForm({ visible }) {
             <label className="font-label-md text-on-surface-variant" htmlFor="signin-password">
               Password
             </label>
-            <a className="font-label-sm text-label-sm text-secondary hover:underline" href="#">
+            <Link className="font-label-sm text-label-sm text-secondary hover:underline" to="/auth/forgot">
               Forgot?
-            </a>
+            </Link>
           </div>
           <div className="relative">
             <span
