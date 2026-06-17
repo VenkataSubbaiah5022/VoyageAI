@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
-const asyncHandler = require('../utils/asyncHandler')const ApiError = require('../utils/ApiError')
+const asyncHandler = require('../utils/asyncHandler')
+const ApiError = require('../utils/ApiError')
 const User = require('../models/User')
 const generateToken = require('../utils/generateToken')
 const env = require('../config/env')
