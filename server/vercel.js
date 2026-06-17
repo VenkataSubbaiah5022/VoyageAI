@@ -1,12 +1,11 @@
-const app = require('../server/src/app')
-const connectDB = require('../server/src/config/db')
+const app = require('./src/app')
+const connectDB = require('./src/config/db')
 
 let connectionPromise = null
 
 function ensureDbConnection() {
   if (!connectionPromise) {
     connectionPromise = connectDB().catch((err) => {
-      // Reset so the next invocation can retry instead of caching a failed connect
       connectionPromise = null
       throw err
     })
