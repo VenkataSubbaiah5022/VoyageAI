@@ -4,6 +4,7 @@ const ApiError = require('../utils/ApiError')
 const Itinerary = require('../models/Itinerary')
 const Upload = require('../models/Upload')
 const { generateItineraryFromExtractions } = require('../services/ai/itineraryService')
+const { syncItineraryStatuses } = require('../utils/itineraryStatus')
 
 const generateItinerary = asyncHandler(async (req, res) => {
   const { uploadIds = [], extractedItems = [], meta = {} } = req.body
@@ -63,16 +64,95 @@ const generateItinerary = asyncHandler(async (req, res) => {
     ...itineraryPayload,
   })
 
-  if (uploadIds.length > 0 && mergedMeta.tripLabel) {
+  if (uploadIds.length > 0) {
     await Upload.updateMany(
       { _id: { $in: uploadIds }, user: req.user._id },
-      { tripLabel: mergedMeta.tripLabel },
+      {
+        tripLabel: mergedMeta.tripLabel || 'Assigned trip',
+        itineraryId: itinerary._id,
+      },
     )
   }
 
   res.status(201).json({ success: true, data: { itinerary } })
 })
 
+const listItineraries = asyncHandler(async (req, res) => {
+  await syncItineraryStatuses(req.user._id)
+
+  const { status } = req.query
+  const filter = { user: req.user._id }
+  if (status === 'upcoming' || status === 'past') {
+    filter.status = status
+  }
+
+  const itineraries = await Itinerary.find(filter)
+    .sort({ startDate: filter.status === 'past' ? -1 : 1 })
+    .lean()
+
+  res.json({ success: true, data: { itineraries } })
+})
+
+const getItinerary = asyncHandler(async (req, res) => {
+  const itinerary = await Itinerary.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+  }).lean()
+
+  if (!itinerary) {
+    throw new ApiError(404, 'Itinerary not found')
+  }
+
+  res.json({ success: true, data: { itinerary } })
+})
+
+const updateItinerary = asyncHandler(async (req, res) => {
+  const allowedFields = ['title', 'travelersLabel', 'subtitle', 'packingList']
+  const updates = {}
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updates[field] = req.body[field]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new ApiError(400, 'No valid fields to update')
+  }
+
+  const itinerary = await Itinerary.findOneAndUpdate(
+    { _id: req.params.id, user: req.user._id },
+    updates,
+    { new: true, runValidators: true },
+  )
+
+  if (!itinerary) {
+    throw new ApiError(404, 'Itinerary not found')
+  }
+
+  res.json({ success: true, data: { itinerary } })
+})
+
+const deleteItinerary = asyncHandler(async (req, res) => {
+  const itinerary = await Itinerary.findOne({
+    _id: req.params.id,
+    user: req.user._id,
+  })
+
+  if (!itinerary) {
+    throw new ApiError(404, 'Itinerary not found')
+  }
+
+  await Upload.updateMany({ itineraryId: itinerary._id }, { itineraryId: null })
+  await itinerary.deleteOne()
+
+  res.json({ success: true, message: 'Itinerary deleted' })
+})
+
 module.exports = {
   generateItinerary,
+  listItineraries,
+  getItinerary,
+  updateItinerary,
+  deleteItinerary,
 }

@@ -1,11 +1,9 @@
-const fs = require('fs')
-const path = require('path')
 const asyncHandler = require('../utils/asyncHandler')
 const ApiError = require('../utils/ApiError')
 const User = require('../models/User')
 const Upload = require('../models/Upload')
 const Itinerary = require('../models/Itinerary')
-const { uploadsDir } = require('../middleware/uploadMiddleware')
+const { deleteFile } = require('../services/storage')
 
 const formatProfile = (user) => ({
   id: user._id,
@@ -111,12 +109,7 @@ const deleteAccount = asyncHandler(async (req, res) => {
 
   const uploads = await Upload.find({ user: user._id })
   for (const upload of uploads) {
-    if (upload.storagePath) {
-      const filePath = path.join(uploadsDir, upload.storagePath)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-      }
-    }
+    await deleteFile(upload)
   }
 
   await Promise.all([

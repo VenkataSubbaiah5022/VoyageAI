@@ -54,6 +54,8 @@ Root `.env` (loaded by the server):
 | `OPENAI_API_KEY` | One of AI keys | OpenAI API key |
 | `PORT` | No | API port (default `5000`) |
 | `CLIENT_URL` | No | CORS origin (default `http://localhost:5173`) |
+| `STORAGE_DRIVER` | No | `local` (default) or `cloudinary` for production file persistence |
+| `CLOUDINARY_*` | If using cloudinary | Cloud name, API key, and secret for cloud file storage |
 
 Client build (production):
 
@@ -74,7 +76,7 @@ Vercel (`vercel.json`) deploys **only the frontend** (`client/dist`). The Expres
 2. **Backend** — Railway, Render, Fly.io, or similar
    - Start command: `npm run start --prefix server`
    - Set all server env vars from `.env.example`
-   - Enable persistent disk or object storage if you need uploaded files to survive restarts (local `server/uploads/` is ephemeral on serverless)
+   - Enable persistent disk **or** set `STORAGE_DRIVER=cloudinary` with Cloudinary credentials so uploads survive restarts
 
 3. **MongoDB** — MongoDB Atlas
 
@@ -95,6 +97,11 @@ Vercel (`vercel.json`) deploys **only the frontend** (`client/dist`). The Expres
 | POST | `/api/uploads` | JWT | Upload travel documents |
 | POST | `/api/uploads/process` | JWT | AI extraction from uploads |
 | POST | `/api/itineraries/generate` | JWT | AI itinerary generation |
+| GET | `/api/itineraries` | JWT | List your itineraries |
+| GET | `/api/itineraries/:id` | JWT | Get itinerary details |
+| PATCH | `/api/itineraries/:id` | JWT | Update title, packing list, etc. |
+| DELETE | `/api/itineraries/:id` | JWT | Delete an itinerary |
+| GET | `/api/uploads/:id/file` | JWT | View or download uploaded document |
 | GET | `/api/share/:shareId` | — | Public shared itinerary |
 | GET | `/api/explore` | — | Curated destinations |
 | GET | `/api/dashboard/*` | JWT | Trips and uploads |

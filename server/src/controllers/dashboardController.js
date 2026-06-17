@@ -1,20 +1,11 @@
 const asyncHandler = require('../utils/asyncHandler')
 const Itinerary = require('../models/Itinerary')
 const Upload = require('../models/Upload')
+const { syncItineraryStatuses } = require('../utils/itineraryStatus')
 
 const formatFileSize = (bytes) => {
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
-}
-
-async function syncItineraryStatuses(userId) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  await Itinerary.updateMany(
-    { user: userId, endDate: { $lt: today }, status: 'upcoming' },
-    { status: 'past' },
-  )
 }
 
 const listItineraries = asyncHandler(async (req, res) => {

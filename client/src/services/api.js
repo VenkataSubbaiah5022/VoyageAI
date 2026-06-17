@@ -80,6 +80,35 @@ export const uploadApi = {
 
   deleteAllUploads: () => request('/uploads/all', { method: 'DELETE' }),
 
+  openFile: async (id, { download = false } = {}) => {
+    const token = getToken()
+    const response = await fetch(
+      `${API_BASE}/uploads/${id}/file${download ? '?download=1' : ''}`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+    )
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}))
+      throw new Error(data.message || 'Could not open file')
+    }
+
+    const blob = await response.blob()
+    const objectUrl = URL.createObjectURL(blob)
+    if (download) {
+      const link = document.createElement('a')
+      link.href = objectUrl
+      link.download = 'document'
+      link.click()
+      URL.revokeObjectURL(objectUrl)
+      return
+    }
+
+    window.open(objectUrl, '_blank', 'noopener,noreferrer')
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+  },
+
   uploadFiles: (files) => {
     const formData = new FormData()
     files.forEach((file) => formData.append('files', file))
@@ -94,6 +123,16 @@ export const uploadApi = {
 }
 
 export const itineraryApi = {
+  list: (status) =>
+    request(status ? `/itineraries?status=${status}` : '/itineraries'),
+
+  get: (id) => request(`/itineraries/${id}`),
+
+  update: (id, payload) =>
+    request(`/itineraries/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+
+  delete: (id) => request(`/itineraries/${id}`, { method: 'DELETE' }),
+
   generate: (payload) =>
     request('/itineraries/generate', {
       method: 'POST',

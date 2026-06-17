@@ -1,9 +1,9 @@
-const path = require('path')
 const { parseJsonFromText } = require('./parseJson')
 const { requireAiProvider } = require('./provider')
 const { generateJsonWithGemini } = require('./geminiClient')
 const { generateJsonWithOpenAI } = require('./openaiClient')
-const { readDocumentContent, buildGeminiFilePart } = require('./fileContent')
+const { readFileBuffer } = require('../storage')
+const pdfParse = require('pdf-parse')
 
 const ICON_BY_TYPE = {
   flight: 'flight',
@@ -90,6 +90,53 @@ function normalizeExtraction(raw, fileName) {
   }
 }
 
+async function readDocumentContent(upload) {
+  const buffer = await readFileBuffer(upload)
+  const mimeType = upload.mimeType
+  const fileName = upload.fileName
+
+  if (mimeType === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
+    const parsed = await pdfParse(buffer)
+    const text = parsed.text?.trim()
+    if (!text) {
+      return {
+        mode: 'binary',
+        buffer,
+        mimeType: 'application/pdf',
+      }
+    }
+    return {
+      mode: 'text',
+      text,
+      mimeType: 'application/pdf',
+    }
+  }
+
+  if (mimeType.startsWith('image/')) {
+    return {
+      mode: 'image',
+      buffer,
+      mimeType,
+      base64: buffer.toString('base64'),
+    }
+  }
+
+  throw new Error(`Unsupported file type: ${mimeType}`)
+}
+
+function buildGeminiFilePart(content) {
+  if (content.mode === 'text') {
+    return null
+  }
+
+  return {
+    inlineData: {
+      data: content.buffer.toString('base64'),
+      mimeType: content.mimeType,
+    },
+  }
+}
+
 async function callExtractionModel({ content, fileName }) {
   const provider = requireAiProvider()
   const textPrefix =
@@ -116,26 +163,21 @@ async function callExtractionModel({ content, fileName }) {
   return parseJsonFromText(responseText)
 }
 
-async function extractFromFile({ filePath, mimeType, fileName }) {
-  const content = await readDocumentContent(filePath, mimeType)
-  const raw = await callExtractionModel({ content, fileName })
-  return normalizeExtraction(raw, fileName)
+async function extractFromUpload(upload) {
+  if (!upload.storagePath) {
+    throw new Error(`Missing storage path for upload: ${upload.fileName}`)
+  }
+
+  const content = await readDocumentContent(upload)
+  const raw = await callExtractionModel({ content, fileName: upload.fileName })
+  return normalizeExtraction(raw, upload.fileName)
 }
 
-async function extractFromUploads(uploads, uploadsDir) {
+async function extractFromUploads(uploads) {
   const results = []
 
   for (const upload of uploads) {
-    if (!upload.storagePath) {
-      throw new Error(`Missing storage path for upload: ${upload.fileName}`)
-    }
-
-    const filePath = path.join(uploadsDir, upload.storagePath)
-    const extraction = await extractFromFile({
-      filePath,
-      mimeType: upload.mimeType,
-      fileName: upload.fileName,
-    })
+    const extraction = await extractFromUpload(upload)
 
     results.push({
       uploadId: upload._id,
@@ -183,5 +225,5 @@ function mergeExtractions(results) {
 
 module.exports = {
   extractFromUploads,
-  extractFromFile,
+  extractFromUpload,
 }

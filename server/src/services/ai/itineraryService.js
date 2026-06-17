@@ -2,6 +2,7 @@ const { parseJsonFromText } = require('./parseJson')
 const { requireAiProvider } = require('./provider')
 const { generateJsonWithGemini } = require('./geminiClient')
 const { generateJsonWithOpenAI } = require('./openaiClient')
+const { buildMapImageUrl } = require('../mapImage')
 
 const DEFAULT_HERO =
   'https://lh3.googleusercontent.com/aida-public/AB6AXuBf9kkhR2wMmUPiyqUtJcZb4xkFQcj4lzT3Oh4As4u5IbU9-BuMdLrUBYZftK97AxqLACaa3M6jr2R8neAz4ekEyfHz3C12pDmfMAddebp6RCoa7N2iCG_bYzghcybUOmsivzxe8zLAa3XqH3wpDUUO9dsa6az5Efb8nc5KI1mBVHZqfLUrjpCmS7I55Mi0DiY8nxF6LxaRmGWFF41nvssuEJ72H5AyjafVN2VCPR8dFVqqkEIFpsfP1F3anIV98rBT3yE9vi-2v8Eu'
@@ -97,7 +98,7 @@ function countActivities(days) {
   return (days || []).reduce((sum, day) => sum + (day.activities?.length || 0), 0)
 }
 
-function normalizeItinerary(raw, { extractedItems, mergedMeta, user }) {
+function normalizeItinerary(raw, { extractedItems, mergedMeta, user, mapImageUrl }) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -155,6 +156,7 @@ function normalizeItinerary(raw, { extractedItems, mergedMeta, user }) {
       Array.isArray(raw?.packingList) && raw.packingList.length > 0
         ? raw.packingList
         : ['Passport', 'Travel adapter', 'Comfortable shoes', 'Weather-appropriate clothing'],
+    mapImageUrl: raw?.mapImageUrl || mapImageUrl || null,
     days: days || buildFallbackDays(extractedItems, startDate),
   }
 }
@@ -201,7 +203,10 @@ async function generateItineraryFromExtractions({ extractedItems, mergedMeta, us
   }
 
   const raw = parseJsonFromText(responseText)
-  return normalizeItinerary(raw, { extractedItems, mergedMeta, user })
+  const destination =
+    raw?.destination || mergedMeta?.destination || extractedItems[0]?.location || 'Your Destination'
+  const mapImageUrl = await buildMapImageUrl(destination)
+  return normalizeItinerary(raw, { extractedItems, mergedMeta, user, mapImageUrl })
 }
 
 module.exports = {

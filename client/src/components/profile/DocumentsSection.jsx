@@ -6,6 +6,7 @@ export default function DocumentsSection() {
   const [uploads, setUploads] = useState([])
   const [loading, setLoading] = useState(true)
   const [deletingId, setDeletingId] = useState(null)
+  const [openingId, setOpeningId] = useState(null)
   const [message, setMessage] = useState(null)
 
   const loadUploads = () => {
@@ -20,6 +21,42 @@ export default function DocumentsSection() {
   useEffect(() => {
     loadUploads()
   }, [])
+
+  const handleView = async (id) => {
+    setOpeningId(id)
+    setMessage(null)
+    try {
+      await uploadApi.openFile(id)
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setOpeningId(null)
+    }
+  }
+
+  const handleDownload = async (id, fileName) => {
+    setOpeningId(id)
+    setMessage(null)
+    try {
+      const token = localStorage.getItem('voyageai_token')
+      const API_BASE = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '/api'
+      const response = await fetch(`${API_BASE}/uploads/${id}/file?download=1`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      if (!response.ok) throw new Error('Download failed')
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName || 'document'
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message })
+    } finally {
+      setOpeningId(null)
+    }
+  }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this document permanently?')) return
@@ -131,23 +168,51 @@ export default function DocumentsSection() {
                     </p>
                     <p className="font-label-sm text-label-sm text-outline">
                       {upload.tripLabel || 'Unassigned'} • {upload.fileSizeLabel}
+                      {upload.processingStatus === 'completed' && ' • Extracted'}
+                      {upload.processingStatus === 'failed' && ' • Extraction failed'}
                     </p>
+                    {upload.itineraryId?.shareId && (
+                      <Link
+                        to={`/share/${upload.itineraryId.shareId}`}
+                        className="font-label-sm text-label-sm text-primary hover:underline"
+                      >
+                        Linked trip: {upload.itineraryId.title || upload.itineraryId.destination}
+                      </Link>
+                    )}
                     <p className="font-label-sm text-label-sm text-outline">
                       {new Date(upload.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(id)}
-                  disabled={deletingId === id}
-                  className="flex items-center gap-1 rounded-lg px-4 py-2 font-label-sm text-label-sm text-error transition-colors hover:bg-error-container/20 disabled:opacity-60"
-                >
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
-                    delete
-                  </span>
-                  {deletingId === id ? 'Deleting...' : 'Delete'}
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleView(id)}
+                    disabled={openingId === id}
+                    className="rounded-lg px-3 py-2 font-label-sm text-label-sm text-primary transition-colors hover:bg-primary/5 disabled:opacity-60"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(id, upload.fileName)}
+                    disabled={openingId === id}
+                    className="rounded-lg px-3 py-2 font-label-sm text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container disabled:opacity-60"
+                  >
+                    Download
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(id)}
+                    disabled={deletingId === id}
+                    className="flex items-center gap-1 rounded-lg px-3 py-2 font-label-sm text-label-sm text-error transition-colors hover:bg-error-container/20 disabled:opacity-60"
+                  >
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                      delete
+                    </span>
+                    {deletingId === id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
               </div>
             )
           })}

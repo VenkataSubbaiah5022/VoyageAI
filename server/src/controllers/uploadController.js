@@ -3,7 +3,7 @@ const path = require('path')
 const asyncHandler = require('../utils/asyncHandler')
 const ApiError = require('../utils/ApiError')
 const Upload = require('../models/Upload')
-const { uploadsDir } = require('../middleware/uploadMiddleware')
+const { saveFile, readFileBuffer, createFileReadStream, deleteFile, getLocalFilePath } = require('../services/storage')
 const { extractFromUploads } = require('../services/ai/extractionService')
 
 const iconForMime = (mimeType) => {
@@ -20,6 +20,7 @@ const formatFileSize = (bytes) => {
 
 const listUploads = asyncHandler(async (req, res) => {
   const uploads = await Upload.find({ user: req.user._id })
+    .populate('itineraryId', 'title shareId destination')
     .sort({ createdAt: -1 })
     .lean()
 
@@ -35,6 +36,30 @@ const listUploads = asyncHandler(async (req, res) => {
   })
 })
 
+const getUploadFile = asyncHandler(async (req, res) => {
+  const upload = await Upload.findOne({ _id: req.params.id, user: req.user._id })
+
+  if (!upload) {
+    throw new ApiError(404, 'Document not found')
+  }
+
+  const disposition = req.query.download === '1' ? 'attachment' : 'inline'
+  res.setHeader('Content-Type', upload.mimeType)
+  res.setHeader('Content-Disposition', `${disposition}; filename="${upload.fileName}"`)
+
+  if (upload.storageDriver === 'cloudinary' && upload.publicUrl) {
+    const buffer = await readFileBuffer(upload)
+    return res.send(buffer)
+  }
+
+  const filePath = getLocalFilePath(upload)
+  if (!filePath || !fs.existsSync(filePath)) {
+    throw new ApiError(404, 'File not found on server')
+  }
+
+  return createFileReadStream(upload).pipe(res)
+})
+
 const deleteUpload = asyncHandler(async (req, res) => {
   const upload = await Upload.findOne({ _id: req.params.id, user: req.user._id })
 
@@ -42,13 +67,7 @@ const deleteUpload = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Document not found')
   }
 
-  if (upload.storagePath) {
-    const filePath = path.join(uploadsDir, upload.storagePath)
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
-    }
-  }
-
+  await deleteFile(upload)
   await upload.deleteOne()
 
   res.json({ success: true, message: 'Document deleted' })
@@ -58,12 +77,7 @@ const deleteAllUploads = asyncHandler(async (req, res) => {
   const uploads = await Upload.find({ user: req.user._id })
 
   for (const upload of uploads) {
-    if (upload.storagePath) {
-      const filePath = path.join(uploadsDir, upload.storagePath)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
-      }
-    }
+    await deleteFile(upload)
   }
 
   await Upload.deleteMany({ user: req.user._id })
@@ -79,14 +93,22 @@ const uploadFiles = asyncHandler(async (req, res) => {
   }
 
   const uploads = await Promise.all(
-    files.map((file) => {
+    files.map(async (file) => {
       const icons = iconForMime(file.mimetype)
+      const stored = await saveFile({
+        buffer: file.buffer,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+      })
+
       return Upload.create({
         user: req.user._id,
         fileName: file.originalname,
         fileSize: file.size,
         mimeType: file.mimetype,
-        storagePath: file.filename,
+        storagePath: stored.storageKey,
+        storageDriver: stored.storageDriver,
+        publicUrl: stored.publicUrl,
         processingStatus: 'pending',
         ...icons,
       })
@@ -115,7 +137,7 @@ const processUploads = asyncHandler(async (req, res) => {
   )
 
   try {
-    const merged = await extractFromUploads(uploads, uploadsDir)
+    const merged = await extractFromUploads(uploads)
 
     await Promise.all(
       merged.perFile.map((fileResult) =>
@@ -161,6 +183,7 @@ const processUploads = asyncHandler(async (req, res) => {
 
 module.exports = {
   listUploads,
+  getUploadFile,
   deleteUpload,
   deleteAllUploads,
   uploadFiles,

@@ -16,6 +16,14 @@ const uploadSchema = new mongoose.Schema(
     iconBg: { type: String, default: 'bg-primary-fixed' },
     iconColor: { type: String, default: 'text-on-primary-fixed' },
     storagePath: { type: String, default: null },
+    storageDriver: { type: String, enum: ['local', 'cloudinary'], default: 'local' },
+    publicUrl: { type: String, default: null },
+    itineraryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Itinerary',
+      default: null,
+      index: true,
+    },
     processingStatus: {
       type: String,
       enum: ['pending', 'processing', 'completed', 'failed'],

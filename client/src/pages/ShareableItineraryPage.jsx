@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { SHARE_DEMO } from '../data/shareDemo'
 import { shareApi } from '../services/api'
 import AppNavbar from '../components/layout/AppNavbar'
@@ -10,6 +11,7 @@ import ShareFooter from '../components/share/ShareFooter'
 
 export default function ShareableItineraryPage() {
   const { shareId } = useParams()
+  const { user } = useAuth()
   const [trip, setTrip] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -88,8 +90,8 @@ export default function ShareableItineraryPage() {
               </span>
             </button>
             <Link
-              to="/dashboard"
-              title="Trip settings"
+              to={user ? '/profile' : '/auth'}
+              title={user ? 'Account settings' : 'Sign in'}
               className="rounded-lg p-2 text-outline transition-all hover:bg-surface-container"
             >
               <span className="material-symbols-outlined" aria-hidden="true">

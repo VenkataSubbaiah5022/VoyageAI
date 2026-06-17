@@ -13,6 +13,10 @@ const env = {
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   geminiApiKey: process.env.GEMINI_API_KEY || null,
   openaiApiKey: process.env.OPENAI_API_KEY || null,
+  storageDriver: process.env.STORAGE_DRIVER || 'local',
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || null,
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || null,
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || null,
 }
 
 if (env.nodeEnv === 'production' && env.jwtSecret === 'dev-only-change-in-production') {
