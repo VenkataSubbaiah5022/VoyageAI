@@ -1,71 +1,74 @@
 const crypto = require('crypto')
 const asyncHandler = require('../utils/asyncHandler')
+const ApiError = require('../utils/ApiError')
 const Itinerary = require('../models/Itinerary')
-
-const DEFAULT_HERO =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuBf9kkhR2wMmUPiyqUtJcZb4xkFQcj4lzT3Oh4As4u5IbU9-BuMdLrUBYZftK97AxqLACaa3M6jr2R8neAz4ekEyfHz3C12pDmfMAddebp6RCoa7N2iCG_bYzghcybUOmsivzxe8zLAa3XqH3wpDUUO9dsa6az5Efb8nc5KI1mBVHZqfLUrjpCmS7I55Mi0DiY8nxF6LxaRmGWFF41nvssuEJ72H5AyjafVN2VCPR8dFVqqkEIFpsfP1F3anIV98rBT3yE9vi-2v8Eu'
-
-const buildDaysFromExtracted = (items) => {
-  const activities = items.map((item, index) => ({
-    type: 'standard',
-    icon: item.icon || 'event',
-    iconBg: 'bg-tertiary-fixed',
-    iconColor: 'text-on-tertiary-fixed-variant',
-    title: item.title,
-    time: `${9 + index}:00 AM`,
-    description: item.status,
-    badge: 'CONFIRMED',
-  }))
-
-  return [
-    {
-      dayNumber: 1,
-      title: 'Arrival & Check-in',
-      dateLabel: 'Day 1',
-      activities,
-    },
-  ]
-}
+const Upload = require('../models/Upload')
+const { generateItineraryFromExtractions } = require('../services/ai/itineraryService')
 
 const generateItinerary = asyncHandler(async (req, res) => {
-  const { extractedItems = [] } = req.body
+  const { uploadIds = [], extractedItems = [], meta = {} } = req.body
+
+  let items = extractedItems
+  let mergedMeta = meta
+
+  if (uploadIds.length > 0) {
+    const uploads = await Upload.find({
+      _id: { $in: uploadIds },
+      user: req.user._id,
+      processingStatus: 'completed',
+    })
+
+    if (uploads.length === 0) {
+      throw new ApiError(400, 'No processed uploads found for the provided uploadIds')
+    }
+
+    const fromDb = uploads.flatMap((upload) => upload.extractedData?.items || [])
+    if (fromDb.length > 0) {
+      items = fromDb
+    }
+
+    const destinations = uploads.map((u) => u.extractedData?.destination).filter(Boolean)
+    const startDates = uploads.map((u) => u.extractedData?.startDate).filter(Boolean)
+    const endDates = uploads.map((u) => u.extractedData?.endDate).filter(Boolean)
+
+    mergedMeta = {
+      tripLabel: uploads[0]?.extractedData?.tripLabel || meta.tripLabel,
+      destination: destinations[0] || meta.destination,
+      startDate: startDates.sort()[0] || meta.startDate,
+      endDate: endDates.sort().reverse()[0] || meta.endDate,
+    }
+  }
+
+  if (!items.length) {
+    throw new ApiError(400, 'No extracted items available. Upload and process documents first.')
+  }
+
+  let itineraryPayload
+  try {
+    itineraryPayload = await generateItineraryFromExtractions({
+      extractedItems: items,
+      mergedMeta,
+      user: req.user,
+    })
+  } catch (err) {
+    throw new ApiError(502, err.message || 'AI itinerary generation failed')
+  }
 
   const shareId = crypto.randomBytes(6).toString('hex')
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() + 30)
-  const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + 7)
-
-  const destination = extractedItems.some((item) => /tokyo|kyoto|japan/i.test(item.title))
-    ? 'Tokyo & Kyoto, Japan'
-    : 'Your Destination'
 
   const itinerary = await Itinerary.create({
     user: req.user._id,
-    title: extractedItems[0]?.title ? `${destination} Trip` : 'New Adventure',
-    destination,
-    startDate,
-    endDate,
-    travelersLabel: 'Solo',
-    imageUrl: DEFAULT_HERO,
-    heroImageUrl: DEFAULT_HERO,
-    tag: 'AI GENERATED',
-    transportIcon: 'flight_takeoff',
-    status: 'upcoming',
     shareId,
-    subtitle: '7 Days Planned',
-    dateRangeLabel: `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
-    stopsCount: extractedItems.length || 4,
-    activitiesCount: extractedItems.length || 4,
-    overview: {
-      weather: '22°C, Partly Cloudy',
-      budget: '¥180,000 Total',
-      language: 'Japanese',
-      progress: 100,
-    },
-    packingList: ['Passport', 'Universal adapter', 'Comfortable walking shoes', 'Light jacket'],
-    days: buildDaysFromExtracted(extractedItems.length ? extractedItems : []),
+    sourceUploadIds: uploadIds,
+    ...itineraryPayload,
   })
+
+  if (uploadIds.length > 0 && mergedMeta.tripLabel) {
+    await Upload.updateMany(
+      { _id: { $in: uploadIds }, user: req.user._id },
+      { tripLabel: mergedMeta.tripLabel },
+    )
+  }
 
   res.status(201).json({ success: true, data: { itinerary } })
 })

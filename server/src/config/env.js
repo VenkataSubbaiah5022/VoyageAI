@@ -11,6 +11,8 @@ const env = {
   jwtSecret: process.env.JWT_SECRET || 'dev-only-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  geminiApiKey: process.env.GEMINI_API_KEY || null,
+  openaiApiKey: process.env.OPENAI_API_KEY || null,
 }
 
 if (env.nodeEnv === 'production' && env.jwtSecret === 'dev-only-change-in-production') {

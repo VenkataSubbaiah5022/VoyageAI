@@ -39,6 +39,12 @@ const itinerarySchema = new mongoose.Schema(
       progress: Number,
     },
     mapImageUrl: { type: String, default: null },
+    sourceUploadIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Upload',
+      },
+    ],
     packingList: [{ type: String }],
     days: [
       {

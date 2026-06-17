@@ -4,17 +4,7 @@ const asyncHandler = require('../utils/asyncHandler')
 const ApiError = require('../utils/ApiError')
 const Upload = require('../models/Upload')
 const { uploadsDir } = require('../middleware/uploadMiddleware')
-
-const MOCK_EXTRACTED = [
-  { title: 'Flight to Tokyo', status: 'Confirmed • Economy • NH854', icon: 'flight' },
-  { title: 'Park Hyatt Kyoto', status: 'Confirmed • Aug 12-18 • King Room', icon: 'hotel' },
-  {
-    title: 'TeamLab Borderless',
-    status: 'Ticket Secured • Aug 14 @ 10:00',
-    icon: 'confirmation_number',
-  },
-  { title: 'JR Rail Pass', status: 'Validated • 7-Day Regional', icon: 'train' },
-]
+const { extractFromUploads } = require('../services/ai/extractionService')
 
 const iconForMime = (mimeType) => {
   if (mimeType === 'application/pdf') {
@@ -97,6 +87,7 @@ const uploadFiles = asyncHandler(async (req, res) => {
         fileSize: file.size,
         mimeType: file.mimetype,
         storagePath: file.filename,
+        processingStatus: 'pending',
         ...icons,
       })
     }),
@@ -118,10 +109,54 @@ const processUploads = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Uploads not found' })
   }
 
-  const itemCount = Math.min(MOCK_EXTRACTED.length, uploads.length + 1)
-  const items = MOCK_EXTRACTED.slice(0, itemCount)
+  await Upload.updateMany(
+    { _id: { $in: uploads.map((u) => u._id) } },
+    { processingStatus: 'processing', processingError: null },
+  )
 
-  res.json({ success: true, data: { items, fileCount: uploads.length } })
+  try {
+    const merged = await extractFromUploads(uploads, uploadsDir)
+
+    await Promise.all(
+      merged.perFile.map((fileResult) =>
+        Upload.findByIdAndUpdate(fileResult.uploadId, {
+          processingStatus: 'completed',
+          processingError: null,
+          tripLabel: fileResult.tripLabel,
+          extractedData: {
+            tripLabel: fileResult.tripLabel,
+            destination: fileResult.destination,
+            startDate: fileResult.startDate,
+            endDate: fileResult.endDate,
+            items: fileResult.items,
+          },
+        }),
+      ),
+    )
+
+    const items = merged.items.map(({ title, status, icon }) => ({ title, status, icon }))
+
+    res.json({
+      success: true,
+      data: {
+        items,
+        fileCount: merged.fileCount,
+        meta: {
+          tripLabel: merged.tripLabel,
+          destination: merged.destination,
+          startDate: merged.startDate,
+          endDate: merged.endDate,
+        },
+      },
+    })
+  } catch (err) {
+    await Upload.updateMany(
+      { _id: { $in: uploads.map((u) => u._id) } },
+      { processingStatus: 'failed', processingError: err.message },
+    )
+
+    throw new ApiError(502, err.message || 'AI extraction failed')
+  }
 })
 
 module.exports = {
@@ -130,5 +165,4 @@ module.exports = {
   deleteAllUploads,
   uploadFiles,
   processUploads,
-  MOCK_EXTRACTED,
 }

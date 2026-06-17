@@ -7,10 +7,22 @@ const formatFileSize = (bytes) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
 }
 
+async function syncItineraryStatuses(userId) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  await Itinerary.updateMany(
+    { user: userId, endDate: { $lt: today }, status: 'upcoming' },
+    { status: 'past' },
+  )
+}
+
 const listItineraries = asyncHandler(async (req, res) => {
   const { status = 'upcoming' } = req.query
+  await syncItineraryStatuses(req.user._id)
+
   const itineraries = await Itinerary.find({ user: req.user._id, status })
-    .sort({ startDate: 1 })
+    .sort({ startDate: status === 'past' ? -1 : 1 })
     .lean()
 
   res.json({ success: true, data: { itineraries } })
@@ -32,6 +44,8 @@ const listUploads = asyncHandler(async (req, res) => {
 })
 
 const getDashboard = asyncHandler(async (req, res) => {
+  await syncItineraryStatuses(req.user._id)
+
   const [itineraries, uploads] = await Promise.all([
     Itinerary.find({ user: req.user._id, status: 'upcoming' }).sort({ startDate: 1 }).lean(),
     Upload.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(5).lean(),

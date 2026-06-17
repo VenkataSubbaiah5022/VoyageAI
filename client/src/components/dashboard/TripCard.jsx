@@ -1,11 +1,25 @@
 import { Link } from 'react-router-dom'
 
 export default function TripCard({ trip }) {
-  const sharePath = trip.shareId ? `/share/${trip.shareId}` : '/share/demo'
+  if (!trip.shareId) {
+    return (
+      <div className="elevation-1 block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest opacity-75">
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <img src={trip.imageUrl} alt={trip.title} className="h-full w-full object-cover" />
+        </div>
+        <div className="space-y-3 p-6">
+          <h3 className="font-title-lg text-title-lg text-primary">{trip.title}</h3>
+          <p className="font-label-md text-label-md text-on-surface-variant">
+            Share link unavailable for this trip
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Link
-      to={sharePath}
+      to={`/share/${trip.shareId}`}
       className="group elevation-1 block cursor-pointer overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest transition-all hover:elevation-2"
     >
       <div className="relative aspect-[4/3] overflow-hidden">

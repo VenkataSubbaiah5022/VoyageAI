@@ -16,6 +16,30 @@ const uploadSchema = new mongoose.Schema(
     iconBg: { type: String, default: 'bg-primary-fixed' },
     iconColor: { type: String, default: 'text-on-primary-fixed' },
     storagePath: { type: String, default: null },
+    processingStatus: {
+      type: String,
+      enum: ['pending', 'processing', 'completed', 'failed'],
+      default: 'pending',
+    },
+    processingError: { type: String, default: null },
+    extractedData: {
+      tripLabel: { type: String, default: null },
+      destination: { type: String, default: null },
+      startDate: { type: String, default: null },
+      endDate: { type: String, default: null },
+      items: [
+        {
+          title: String,
+          status: String,
+          icon: String,
+          bookingType: String,
+          confirmationNumber: String,
+          date: String,
+          location: String,
+          notes: String,
+        },
+      ],
+    },
   },
   { timestamps: true },
 )
